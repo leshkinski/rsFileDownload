@@ -2,7 +2,6 @@
 class RS_rsFileDownload : OMI_BaseResource
 {
 [key] string SourceURL;
-[key] string DestinationFolder;
-[key] string DestinationFileName;
+[key] string DestinationFile;
 [write,ValueMap{"Present", "Absent"},Values{"Present", "Absent"}] string Ensure;
 };

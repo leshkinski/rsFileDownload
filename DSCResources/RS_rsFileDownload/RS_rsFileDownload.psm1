@@ -10,24 +10,20 @@ function Get-TargetResource
 		[Parameter(Mandatory)]
 		[ValidateNotNullOrEmpty()]
 		[string]$SourceURL,
-
-		[Parameter(Mandatory)]
-		[ValidateNotNullOrEmpty()]
-		[string]$DestinationFolder,
 		
 		[Parameter(Mandatory)]
 		[ValidateNotNullOrEmpty()]
-		[string]$DestinationFilename
+		[string]$DestinationFile
 	)
 	
-	if(!(Test-Path -Path $($DestinationFolder,$DestinationFilename -join "\")))
+	#check to see if file exists
+	if(!(Test-Path -Path $DestinationFile))
 	{
 		Write-Verbose "File is not present and needs to be downloaded."
 		$Configuration = @{
 					Ensure = $Ensure
 					SourceURL = $SourceURL
-					DestinationFolder = $DestinationFolder
-					DestinationFilename = $DestinationFilename
+					DestinationFile = $DestinationFile
 					}
 	}
 	else
@@ -36,8 +32,7 @@ function Get-TargetResource
 		$Configuration = @{
 					Ensure = $Ensure
 					SourceURL = $SourceURL
-					DestinationFolder = $DestinationFolder
-					DestinationFilename = $DestinationFilename
+					DestinationFile = $DestinationFile
 					}
 	}
 	
@@ -61,11 +56,7 @@ function Set-TargetResource
 
 		[Parameter(Mandatory)]
 		[ValidateNotNullOrEmpty()]
-		[string]$DestinationFolder,
-		
-		[Parameter(Mandatory)]
-		[ValidateNotNullOrEmpty()]
-		[string]$DestinationFilename
+		[string]$DestinationFile
 	)
 	try
 	{
@@ -76,29 +67,32 @@ function Set-TargetResource
 	
 	if ($Ensure -like 'Present')
 	{
-		if(!(Test-Path -Path $DestinationFolder)) 
-		{
-			Write-Verbose "Folder is not present and will be created."
-			New-Item $DestinationFolder -type directory
-		}
-
-		if(!(Test-Path -Path $($DestinationFolder,$DestinationFilename -join "\"))) 
+		if(!(Test-Path -Path $DestinationFile)) 
 		{
 			Write-Verbose "File is not present and will be downloaded."
 			$downloadtry = 1
 			While ($downloadtry -lt 4)
 				{
 					try{
-						Write-Verbose "Trying download $downloadtry"
-						$webclient = New-Object System.Net.WebClient
-						$webclient.DownloadFile($SourceURL,$($DestinationFolder,$DestinationFilename -join "\"))
+						Write-Verbose "Trying download attempt $downloadtry"
+						Invoke-WebRequest $SourceURL -OutFile $DestinationFile
 						$downloadtry = 4
 					}
-					catch [System.Net.WebException] {
-						Write-Verbose "Download failed"
+					catch {
+						Write-Verbose "Download failed - retrying"
 						$downloadtry++
 						}
 				}
+			#after while loop completes check path again
+			if(!(Test-Path -Path $DestinationFile))
+			{
+				Write-Verbose "Download of $SourceURL to $DestinationFile was successful"
+			}
+			else
+			{
+				Write-Verbose "Download of $SourceURL to $DestinationFile failed"
+				Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Error -EventId 1000 -Message "Failed to download $SourceURL"
+			}
 		}
 		else
 		{
@@ -107,14 +101,14 @@ function Set-TargetResource
 	}
 	else
 	{
-		if (!(Test-Path -Path $($DestinationFolder,$DestinationFilename -join "\")))
+		if (!(Test-Path -Path $DestinationFile))
 		{
 			Write-Verbose "File is not present, no action needed"
 		}
 		else
 		{
 			Write-Verbose "File is present, and will be removed."
-			Remove-Item $($DestinationFolder,$DestinationFileName -join "\") -recurse
+			Remove-Item $DestinationFile -Force
 		}
 	}
 }
@@ -137,21 +131,17 @@ function Test-TargetResource
 
 		[Parameter(Mandatory)]
 		[ValidateNotNullOrEmpty()]
-		[string]$DestinationFolder,
-		
-		[Parameter(Mandatory)]
-		[ValidateNotNullOrEmpty()]
-		[string]$DestinationFilename
+		[string]$DestinationFile
 	)
 	
 	$IsValid = $false
 	
-	$FileLocation = $($DestinationFolder,$DestinationFilename -join "\")
+	$FileLocation = $DestinationFile
 	
 	if ($Ensure -like 'Present')
 	{
-		Write-Verbose "Checking for $DestinationFilename inside $DestinationFolder."
-		if(!(Test-Path -Path $($DestinationFolder,$DestinationFilename -join "\")))
+		Write-Verbose "Checking for presence of $DestinationFile"
+		if(!(Test-Path -Path $DestinationFile))
 		{
 			Write-Verbose "File is not present."
 		}
@@ -163,7 +153,7 @@ function Test-TargetResource
 	}
 	else
 	{
-		if(!(Test-Path -Path $($DestinationFolder,$DestinationFilename -join "\")))
+		if(!(Test-Path -Path $DestinationFile))
 		{
 			Write-Verbose "File is not present."
 			$IsValid = $true
