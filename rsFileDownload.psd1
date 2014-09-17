@@ -6,7 +6,7 @@ ModuleVersion = '1.0.1'
 GUID = '8eccfd0b-56a8-496f-aa17-16f912636800'
 
 # Author of this module
-Author = 'Rackspace'
+Author = 'Jon Madison'
 
 # Company or vendor of this module
 CompanyName = 'Rackspace'
