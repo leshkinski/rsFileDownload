@@ -75,11 +75,11 @@ function Set-TargetResource
 			While ($downloadtry -lt 6)
 				{
 					try{
-						Write-EventLog -LogName DevOps -Source BasePrep -EntryType Information -EventId 1000 -Message "Try $downloadtry of $downloadtrymax downloading $SourceURL to $DestinationFile"
+						Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "Try $downloadtry of $downloadtrymax downloading $SourceURL to $DestinationFile"
 						Invoke-WebRequest $SourceURL -OutFile $DestinationFile
 							if(Test-Path -Path $DestinationFile)
 							{
-							Write-EventLog -LogName DevOps -Source BasePrep -EntryType Information -EventId 1000 -Message "Download of $SourceURL to $DestinationFile was successful"
+							Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "Download of $SourceURL to $DestinationFile was successful"
 							$downloadtry = 6
 							}
 						}
