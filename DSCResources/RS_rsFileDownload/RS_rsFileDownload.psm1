@@ -69,45 +69,46 @@ function Set-TargetResource
 	{
 		if(!(Test-Path -Path $DestinationFile)) 
 		{
-			Write-Verbose "File is not present and will be downloaded."
+			Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "File $DestinationFile is present in configuration, but not present on disk, and will be downloaded from $SourceURL."
 			$downloadtry = 1
-			While ($downloadtry -lt 4)
+			$downloadtrymax = 5
+			While ($downloadtry -lt 6)
 				{
 					try{
-						Write-Verbose "Trying download attempt $downloadtry"
+						Write-EventLog -LogName DevOps -Source BasePrep -EntryType Information -EventId 1000 -Message "Try $downloadtry of $downloadtrymax downloading $SourceURL to $DestinationFile"
 						Invoke-WebRequest $SourceURL -OutFile $DestinationFile
-						$downloadtry = 4
-					}
-					catch {
-						Write-Verbose "Download failed - retrying"
-						$downloadtry++
+							if(Test-Path -Path $DestinationFile)
+							{
+							Write-EventLog -LogName DevOps -Source BasePrep -EntryType Information -EventId 1000 -Message "Download of $SourceURL to $DestinationFile was successful"
+							$downloadtry = 6
+							}
 						}
+					catch {
+						if($downloadtry -lt 5){
+							Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "Download of $SourceURL failed, retrying"
+							$downloadtry++
+						}
+						else{
+							Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "Download of $SourceURL has exceeded the maximum number of retries"
+							$downloadtry = 6
+						}
+					}
 				}
-			#after while loop completes check path again
-			if(!(Test-Path -Path $DestinationFile))
-			{
-				Write-Verbose "Download of $SourceURL to $DestinationFile was successful"
-			}
-			else
-			{
-				Write-Verbose "Download of $SourceURL to $DestinationFile failed"
-				Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Error -EventId 1000 -Message "Failed to download $SourceURL"
-			}
 		}
 		else
 		{
-			Write-Verbose "File is present, no action needed."
+			Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "File $DestinationFile is present in configuration, and present on disk, no action taken"
 		}
 	}
 	else
 	{
 		if (!(Test-Path -Path $DestinationFile))
 		{
-			Write-Verbose "File is not present, no action needed"
+			Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "File $DestinationFile is absent in configuration, and not present on disk, no action taken"
 		}
 		else
 		{
-			Write-Verbose "File is present, and will be removed."
+			Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "File $DestinationFile is absent in configuration, but present on disk, deleting"
 			Remove-Item $DestinationFile -Force
 		}
 	}
@@ -140,7 +141,6 @@ function Test-TargetResource
 	
 	if ($Ensure -like 'Present')
 	{
-		Write-Verbose "Checking for presence of $DestinationFile"
 		if(!(Test-Path -Path $DestinationFile))
 		{
 			Write-Verbose "File is not present."
@@ -155,7 +155,6 @@ function Test-TargetResource
 	{
 		if(!(Test-Path -Path $DestinationFile))
 		{
-			Write-Verbose "File is not present."
 			$IsValid = $true
 		}
 		else
