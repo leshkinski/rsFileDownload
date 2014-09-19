@@ -85,11 +85,11 @@ function Set-TargetResource
 						}
 					catch {
 						if($downloadtry -lt 5){
-							Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "Download of $SourceURL failed, retrying"
+							Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Error -EventId 1002 -Message "Download $downloadtry of $downloadtrymax of $SourceURL failed, retrying"
 							$downloadtry++
 						}
 						else{
-							Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "Download of $SourceURL has exceeded the maximum number of retries"
+							Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Error -EventId 1002 -Message "Download of $SourceURL has exceeded the maximum number of retries"
 							$downloadtry = 6
 						}
 					}
