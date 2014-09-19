@@ -72,8 +72,8 @@ function Set-TargetResource
 			Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "File $DestinationFile is present in configuration, but not present on disk, and will be downloaded from $SourceURL."
 			$downloadtry = 1
 			$downloadtrymax = 5
-			While ($downloadtry -lt 6)
-				{
+			While($downloadtry -lt 6)
+				do{
 					try{
 						Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "Try $downloadtry of $downloadtrymax downloading $SourceURL to $DestinationFile"
 						Invoke-WebRequest $SourceURL -OutFile $DestinationFile
