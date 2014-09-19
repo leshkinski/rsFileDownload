@@ -76,11 +76,9 @@ function Set-TargetResource
 				{
 					try{
 						Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "Try $downloadtry of $downloadtrymax downloading $SourceURL to $DestinationFile"
-						Function Download-File {
-						param ( [string]$SourceURL, [string]$DestinationFile )
 						$webclient = New-Object System.Net.WebClient
-						$webclient.downloadfile
-							if(Test-Path -Path $DestinationFile)
+						$webclient.downloadfile($SourceURL,$DestinationFile)
+						if(Test-Path -Path $DestinationFile)
 							{
 							Write-EventLog -LogName DevOps -Source $myLogSource -EntryType Information -EventId 1000 -Message "Download of $SourceURL to $DestinationFile was successful"
 							$downloadtry = 6
