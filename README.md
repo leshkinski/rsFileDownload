@@ -13,6 +13,7 @@ rsFileDownload newrelic_net_msi
 		
 
 RELEASE v1.2.0
+
 Eliminated separate folder and file variables<br/>
 Converted from webclient to invoke-webrequest<br/>
 added error logging
